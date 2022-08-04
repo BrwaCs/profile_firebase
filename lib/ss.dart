@@ -14,7 +14,7 @@ class Profile extends StatelessWidget {
           height: 600,
           child: Column(
             children: [
-              Padding(padding: EdgeInsets.all(40),
+              Padding(padding: EdgeInsets.all(20),
               child: Container(
                 height: 150,
                 decoration: BoxDecoration(
