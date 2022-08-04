@@ -46,16 +46,40 @@ TextEditingController _messagecontroler= TextEditingController();
               }
               else if(snapshot.connectionState==ConnectionState.waiting){
          
-         return CircularProgressIndicator();
+         return Text("Loding...");
               }
               else if(snapshot.data==null){
-                return Text("no data");
+                return SafeArea(child: Center(child: Text("no data")));
               }
               else{
                 return ListView(
                   children:snapshot.data!.docs.map((e){
                     final dynamic data=e.data();
-                    return Text(data['sendmessage'] ?? "null");
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            
+                            color: Colors.grey,
+                            height: 30,
+                            width: double.infinity,
+                          
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(data['sendmessage'] ?? "null"),
+                            )),
+                        ),
+                          Divider(
+                            height: 2,
+                          )
+                      ],
+                      
+                    );
                   }).toList()
                 );
               }
