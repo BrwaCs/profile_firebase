@@ -1,104 +1,115 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/key.dart';
 import 'package:flutter/src/widgets/framework.dart';
 
-class Message extends StatelessWidget {
-  const Message({Key? key}) : super(key: key);
+FirebaseFirestore firestore=FirebaseFirestore.instance;
+class Message extends StatefulWidget {
+Message({Key? key}) : super(key: key);
+
+  @override
+  State<Message> createState() => _MessageState();
+}
+
+class _MessageState extends State<Message> {
+
+TextEditingController _messagecontroler= TextEditingController();
 
   @override
   Widget build(BuildContext context) {
+    CollectionReference meesageref=FirebaseFirestore.instance.collection("message");
     return Scaffold(
-      body: Column(
-        children: [
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Text("Messages",
+              style: TextStyle(
+                fontSize: 26,fontWeight: FontWeight.bold
+              ),),
+            ),
+          ),
+         Expanded(
+           child: Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: StreamBuilder(
+             stream: meesageref.snapshots() ,
+             builder: (Context ,AsyncSnapshot<QuerySnapshot<Object?>> snapshot)
+             {
+              if(snapshot.hasError){
+                return Text("has error");
+              }
+              else if(snapshot.connectionState==ConnectionState.waiting){
+         
+         return CircularProgressIndicator();
+              }
+              else if(snapshot.data==null){
+                return Text("no data");
+              }
+              else{
+                return ListView(
+                  children:snapshot.data!.docs.map((e){
+                    final dynamic data=e.data();
+                    return Text(data['sendmessage'] ?? "null");
+                  }).toList()
+                );
+              }
+             }
+                ),
+           ),
+         ),
+
 
           Padding(
-            padding: const EdgeInsets.only(top:30.0),
+            padding: const EdgeInsets.all(8.0),
             child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text("Messages",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-                )
-              ],
-            ),
-          ),
-          SizedBox(height: 20,),
-          Container(
-          
-            decoration: BoxDecoration(
-                border: Border.all(
-                 color: Colors.green,
-                  ),
-                    borderRadius: BorderRadius.all(Radius.circular(10))
-                      ),
-            height: 130,
-            width: 310,
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Text("Name",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),)
-                    ],
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    children: [
-                     Container( width: 14.0, ),
-                 Flexible( 
-                   child: Text("Sit veniam excepteur et commodo consequat velitsdihfioshe reprehenderit reprehenderit veniam voluptate incididunt magna culpa",
-                   style: TextStyle(
-                    fontSize: 14,
-                    height: 1.2
-                   )
-                   ),
-                 )
-                    ],
+              Expanded(
+                child:TextFormField(
+                  controller: _messagecontroler,
+                  decoration: InputDecoration(
+                    hintText: "Message",
+                    filled:true,
+                    fillColor: Colors.white,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))
                   )
-                ],
-              ),
-            ),
-          ),
-          Divider(thickness: 1,
-          color: Colors.grey,),
-          SizedBox(height: 10,),
-          Container(
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("SEND ME A MESSAGE")
-                  ],
+                  )
+                  
                 ),
-                Row(
-                  children: [
-                    TextField(
-           cursorColor: Colors.redAccent,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Enter a search term',
-            ),
-          ),
-                  ],
+                
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: IconButton(onPressed: (){
+                    addmessage(message: _messagecontroler.text);
+                  },
+                  color: Colors.blue, 
+                  iconSize: 35,
+                  icon:Icon(Icons.send)),
+                )
+              ]
                 ),
-              ],
-            ),
+          ),
+          
+            ],
           )
-        ],
-      )
-    );
+        ),
+      );
+    
     
   }
 }
+
+Future <DocumentReference>addmessage({required String message})async{
+  DocumentReference _messagedoc= await firestore.collection("message").add({
+    "sendmessage":"$message"
+  });
+return _messagedoc;
+}
+
+
